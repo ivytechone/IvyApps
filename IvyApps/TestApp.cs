@@ -5,7 +5,7 @@ namespace IvyApps
 { 
     public static class TestApp
     {
-        static string appRoot = "testapp";
+        static string appRoot = "TestApp";
         static string clientId = "5967CA44-7FE7-462E-8DC3-1E2024F664AA";
 
         public static WebApplication AddTestAppMapping(this WebApplication app)
