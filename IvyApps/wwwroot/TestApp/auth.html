@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Trend</title>
+    </head>
+    <body>
+        <div id="errorMsg" style="visibility:hidden">An unknown error occured</div>
+    
+        <script>
+            const authState = window.sessionStorage.getItem('authState');
+            const authCodeVerifier = window.sessionStorage.getItem('authCodeVerifier');
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+
+            if (authState && code && state && state === authState) {
+                var body = {
+                    code,
+                    code_verifier: authCodeVerifier
+                };
+
+                const response = fetch(`/token`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify(body),
+                }).then((response) => {
+                    if (response.ok) {
+                        window.localStorage.setItem('auth', 'true');
+                        window.location.href = "/"
+                    }
+                });
+            } else {
+                window.document.getElementById("errorMsg").style.visibility = "visible";
+            }
+        </script>
+    </body>
+</html>
