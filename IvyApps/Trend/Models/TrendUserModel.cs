@@ -3,7 +3,7 @@ namespace Trend.Models
 public class Record
 {
     public string? Date {get;set;}
-    public int Weight {get;set;}
+    public double Weight {get;set;}
 }
 
 public class TrendUserModel
@@ -99,7 +99,7 @@ public class TrendUserModel
                             yield return new Record()
                             {
                                 Date = $"{blockId}_{day+1}",
-                                Weight = weight
+                                Weight = weight / 10.0
                             };
                         }
                     }

@@ -30,14 +30,23 @@
     </div>
  </body>
  <script>
-    var weightEntry = 0;
+    var weight = Number.NaN;
 
     onChange = (value) => {
-        weight = value;
-        console.log(weight);
+        weight = parseInt(parseFloat(value) * 10);
+        if (isNaN(weight)) {
+            console.log("error");
+        } else {
+            console.log(weight);
+        }
     }
 
     onSubmit = async () => {
+
+        if (isNaN(weight)) {
+            return;
+        }
+
         response = await fetch("recordCurrentWeight", {
             method: "POST",
             headers: {
