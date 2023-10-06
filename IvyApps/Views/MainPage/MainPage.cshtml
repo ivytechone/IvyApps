@@ -1,0 +1,53 @@
+@model MainPageModel
+<!DOCTYPE html>
+<head>
+    <title>Trend</title>
+</head>
+<link rel="stylesheet" href="trend.css">
+<script src="ivyAuth.js"></script>
+<body>
+<div id="headerregion">
+    <div id="mainheader">Trend</div>
+    <div id="subheader">Friendly weight tracking</div>
+</div>
+<div id="bodyregion">
+    @if (Model == null || Model.Identity == null)
+    {        
+        <div id="welcome">Welcome, please log in to start.</div>
+        <div class="fullwidthbutton" onclick="onLogin()">Log in</div>
+    }
+    else if (Model.WeightRecordToday.Weight == 0)
+    {
+         <div id="welcome">Welcome, @Model.Identity.Name</div>
+         <div>Enter weight record for @Model.WeightRecordToday.Month/@Model.WeightRecordToday.Day/@Model.WeightRecordToday.Year</div>
+         <input onChange="onChange(this.value)">
+         <div class="fullwidthbutton" onclick="onSubmit()">Submit</div>
+    }
+    else
+    {
+        <div>Thank you, you have recorded your weight for @Model.WeightRecordToday.Month/@Model.WeightRecordToday.Day/@Model.WeightRecordToday.Year</div>
+    }
+    </div>
+ </body>
+ <script>
+    var weightEntry = 0;
+
+    onChange = (value) => {
+        weight = value;
+        console.log(weight);
+    }
+
+    onSubmit = async () => {
+        response = await fetch("recordCurrentWeight", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({weight})
+        });
+
+        if (response.ok) {
+            location.reload();
+        }
+    }
+ </script>

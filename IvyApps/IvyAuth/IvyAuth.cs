@@ -1,18 +1,18 @@
-﻿using IvyApps.Interfaces;
-using IvyApps.Config;
+﻿using IvyApps.Config;
+using Newtonsoft.Json;
 using JWT.Algorithms;
 using JWT.Builder;
 using System.Security.Cryptography.X509Certificates;
 
-namespace IvyApps
+namespace IvyTech.Auth
 {
     public class IvyAuth : IIvyAuth
     {
         private readonly IvyAuthConfig _config;
 
-        public IvyAuth(IvyAuthConfig config)
+        public IvyAuth(IvyAuthConfig? config)
         {
-            if (string.IsNullOrWhiteSpace(config.certPem) || string.IsNullOrWhiteSpace(config.authServerUrl) )
+            if (config == null || string.IsNullOrWhiteSpace(config.certPem) || string.IsNullOrWhiteSpace(config.authServerUrl) )
             {
                 throw new Exception("IvyAuthConfig is missing or invalid");
             }
@@ -48,25 +48,48 @@ namespace IvyApps
             }
         }
 
+        public IvyIdentity? GetIdentity(HttpRequest request)
+        {
+            var rawToken = request.Cookies["ivyauth"];
+            if (string.IsNullOrWhiteSpace(rawToken))
+            {
+                return null;
+            }
+
+            var token = ValidateAndDecodeToken(rawToken);
+            if (token == null) {
+                return null;
+            }
+
+            return IvyIdentity.FromToken(token);            
+        }
+
         public bool IsTokenValid(string token)
         {
-            var cert = X509Certificate2.CreateFromPem(_config.certPem);
+            return ValidateAndDecodeToken(token) != null;
+        }
 
-            string decodedToken;
+        private IvyAuthToken? ValidateAndDecodeToken(string rawtoken)
+        {
             try
             {
-                decodedToken = JwtBuilder.Create()
+                var cert = X509Certificate2.CreateFromPem(_config.certPem);
+                var decodedToken = JwtBuilder.Create()
                     .WithAlgorithm(new RS256Algorithm(cert))
                     .MustVerifySignature()
-                    .Decode(token);
+                    .Decode(rawtoken);
+
+                var token = JsonConvert.DeserializeObject<IvyAuthToken>(decodedToken);
+
+                // todo verify token.aud
+    
+                return token;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return false;
+                return null;
             }
-
-            return true;
         }
     }   
 }

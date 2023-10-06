@@ -1,0 +1,33 @@
+body {
+    background-color: darkblue;
+    color: white;
+}
+#headerregion {
+    margin:auto;
+    width:300pt;
+    margin-bottom: 50px;
+}
+#bodyregion {
+    margin:auto;
+    width:300pt;
+}
+#mainheader {
+    font-size: xx-large;
+}
+#subheader {
+    color: gray;
+}
+#welcome {
+    margin-bottom: 10px;
+}
+.fullwidthbutton {
+    margin:auto;
+    padding: 5px;
+    text-align: center;
+    background-color:cadetblue;
+    color:black;
+    border-radius: 5px;
+}
+.fullwidthbutton:hover {
+    background-color:aqua;
+}

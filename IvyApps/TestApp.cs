@@ -1,4 +1,4 @@
-﻿using IvyApps.Interfaces;
+﻿using IvyTech.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IvyApps
@@ -12,6 +12,7 @@ namespace IvyApps
         {
             app.MapGet($"{appRoot}/test", Test);
             app.MapGet($"{appRoot}/logout", Logout);
+            app.MapGet($"{appRoot}/identity", Identity);
             app.MapPost($"{appRoot}/token", Token);
             return app;
         }
@@ -20,6 +21,19 @@ namespace IvyApps
         {
             httpContext.Response.Cookies.Append("ivyauth", "deleted", new CookieOptions() { Secure = true, HttpOnly = true, SameSite = SameSiteMode.Strict, Expires = DateTimeOffset.UnixEpoch });
             return Results.Redirect("/");
+        }
+
+        public static IResult Identity(IIvyAuth ivyAuth, HttpContext httpContext)
+        {
+            var identity = ivyAuth.GetIdentity(httpContext.Request);
+            if (identity != null)
+            {
+                return Results.Ok(identity);
+            }
+            else
+            {
+                return Results.Unauthorized();
+            }
         }
 
         public class TokenBody
