@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <head>
     <title>Trend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <link rel="stylesheet" href="trend.css">
 <script src="ivyAuth.js"></script>
@@ -12,13 +13,13 @@
 </div>
 <div id="bodyregion">
     @if (Model == null || Model.Identity == null)
-    {        
+    {
         <div id="welcome">Welcome, please log in to start.</div>
         <div class="fullwidthbutton" onclick="onLogin()">Log in</div>
     }
     else if (Model.WeightRecordToday.Weight == 0)
     {
-         <div id="welcome">Welcome, @Model.Identity.Name</div>
+         <div id="welcome">Welcome, @Model.Identity.Name @Model.Identity.Id</div>
          <div>Enter weight record for @Model.WeightRecordToday.Month/@Model.WeightRecordToday.Day/@Model.WeightRecordToday.Year</div>
          <input onChange="onChange(this.value)">
          <div class="fullwidthbutton" onclick="onSubmit()">Submit</div>
