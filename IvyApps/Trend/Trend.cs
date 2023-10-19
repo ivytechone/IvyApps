@@ -1,6 +1,7 @@
 using IvyTech.Auth;
 using Trend.Models;
 using Microsoft.AspNetCore.Mvc;
+using IvyApps.Data;
 
 namespace IvyApps
 { 
@@ -15,7 +16,6 @@ namespace IvyApps
             app.MapPost($"{appRoot}/token", Token);
             app.MapPost($"{appRoot}/recordCurrentWeight", RecordCurrentWeight);
             app.MapGet($"{appRoot}/allData", AllData);
-            app.MapGet($"{appRoot}/save", Save);
             return app;
         }
 
@@ -23,18 +23,6 @@ namespace IvyApps
         {
             httpContext.Response.Cookies.Append("ivyauth", "deleted", new CookieOptions() { Secure = true, HttpOnly = true, SameSite = SameSiteMode.Strict, Expires = DateTimeOffset.UnixEpoch });
             return Results.Redirect("/");
-        }
-
-        public static async Task<IResult> Save(ITrendModel model, HttpContext httpContext)
-        {
-            if (model.Save())
-            {
-                return Results.Ok();
-            }
-            else
-            {
-                return Results.StatusCode(500);
-            }
         }
 
         public static async Task<IResult> AllData(IIvyAuth ivyAuth, ITrendModel model, HttpContext httpContext)
@@ -80,6 +68,7 @@ namespace IvyApps
 
             if (userModel != null && userModel.RecordWeightToday(body.Weight.Value)) 
             {
+                model.MarkDirty(userModel);
                 return Results.Ok();
             }
 

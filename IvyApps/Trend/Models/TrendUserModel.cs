@@ -1,3 +1,5 @@
+using IvyApps.Data;
+
 namespace Trend.Models
 {
 public class Record
@@ -6,36 +8,93 @@ public class Record
     public double Weight {get;set;}
 }
 
-public class TrendUserModel
+public class TrendUserModel : IIvyFile
 {
     private readonly static int BLOCKSIZE = 31;
+    private readonly string _userId;
+    private Dictionary<string, int[]> _dataBlocks;
+    private readonly object _mutex = new object();
+
     public TrendUserModel()
     {
-        _datablocks = new Dictionary<string, int[]>();
+        _userId = string.Empty;
+        _dataBlocks = new Dictionary<string, int[]>();;
     }
 
-  /*  public static TrendUserModel? Deserialize(byte[] data) 
+    public TrendUserModel(string userid)
     {
-        if (data[0] != 0xCD || data[1] != 0xC3 || data[2] != 0xB1) 
+        if (string.IsNullOrWhiteSpace(userid))
         {
-            return null;
+            throw new ArgumentException("userid");
+        }
+        _userId = userid;
+        _dataBlocks = new Dictionary<string, int[]>();
+    }
+
+    public string Id => _userId;
+
+    public IIvyFile Deserialize(string id, Stream dataStream) 
+    {
+        var b = dataStream.ReadByte();
+
+        // Read file header
+        if (0xCD != b ||
+            0xC3 != dataStream.ReadByte() ||
+            0xB1 != dataStream.ReadByte())
+        {
+            throw new Exception($"file header invalid {b}");
         }
 
-        UInt16 i = 3;
-        while (true)
+        var file = new TrendUserModel(id);
+
+        while(true)
         {
-            if ()
+            // Read block header
+            var blockType = dataStream.ReadByte();
+            if (blockType == -1)
+            {
+                break;
+            }
+            var blockSize = dataStream.ReadByte();
+            if (blockSize == -1)
+            {
+                throw new Exception("Error reading block");
+            }
+            var blockData = new byte[blockSize];
+            dataStream.ReadExactly(blockData, 0, blockSize);
+
+            switch (blockType)
+            {
+                case 0x00:
+                    int year = blockData[0] << 4;
+                    year += (blockData[1] & 0b11110000) >> 4;
+                    int month = blockData[1] & 0b1111;
+                    var daysInBlock = (blockSize-2)/2;
+                    var block = new int[daysInBlock];
+                    
+                    for (int i = 0; i < daysInBlock; i++)
+                    {
+                        block[i] = blockData[2*i+2] << 8;
+                        block[i] += blockData[2*i+3];
+                    }
+
+                    file._dataBlocks.Add($"{year}_{month}", block);
+                    break;
+
+                default:
+                    throw new Exception("Unknown block type");
+            }
         }
-     }  
-*/
-    public byte[] Serialize()
+        return file;
+    }
+
+    public Stream Serialize()
     {
         lock (_mutex)
         {
             UInt16 size = 3;
-            UInt16 blockCount = checked((UInt16)_datablocks.Count());
+            UInt16 blockCount = checked((UInt16)_dataBlocks.Count());
             size += checked((UInt16)(blockCount * 0x42));
-
             var data = new byte[size];
 
             // file header
@@ -44,11 +103,11 @@ public class TrendUserModel
             data[i++] = 0xC3;
             data[i++] = 0xB1;
 
-            foreach (var blockId in _datablocks.Keys)
+            foreach (var blockId in _dataBlocks.Keys)
             {
                 //block header
-                data[i++] = 0x00;
-                data[i++] = 0x40; // always storing 2 byte for id and 31 x 2 bytes for data
+                data[i++] = 0x00;  // block type
+                data[i++] = 0x40; // block size 2 + (31 * 2)
 
                 var blockIdSplit = blockId.Split('_');
                 if (blockIdSplit.Length != 2)
@@ -69,14 +128,14 @@ public class TrendUserModel
                 data[i++] = (byte)(x >> 8);
                 data[i++] = (byte)(x);
 
-                var block = _datablocks[blockId];
+                var block = _dataBlocks[blockId];
                 for (int d = 0; d < BLOCKSIZE; d++)
                 {
                     data[i++] = (byte)(block[d] >> 8);
                     data[i++] = (byte)(block[d]);
                 }
             }
-            return data;
+            return new MemoryStream(data);
         }
     }
 
@@ -86,9 +145,9 @@ public class TrendUserModel
         get {
             lock (_mutex)
             {
-                foreach (var blockId in _datablocks.Keys)
+                foreach (var blockId in _dataBlocks.Keys)
                 {
-                    var block = _datablocks[blockId];
+                    var block = _dataBlocks[blockId];
                     
                     for (int day = 0; day < BLOCKSIZE; day++)
                     {
@@ -120,6 +179,13 @@ public class TrendUserModel
         }
     }
 
+    public bool RecordWeight(int year, int month, int day, int weight)
+    {
+        var block = getDataBlock(year, month);
+        block[day - 1] = weight;
+        return true;
+    }
+
     public WeightRecord WeightRecordToday()
     {
         lock(_mutex)
@@ -136,22 +202,21 @@ public class TrendUserModel
                 Day = currentLocalTime.Day,
                 Weight =  block[currentLocalTime.Day - 1]
             };
-        }           
+        }
     }
 
     private int[] getDataBlock(int year, int month)
     {
-        if (!_datablocks.TryGetValue($"{year}_{month}", out int[]? block))
+        lock (_mutex)
         {
-            block = new int[BLOCKSIZE];
-            _datablocks.Add($"{year}_{month}", block);
+            if (!_dataBlocks.TryGetValue($"{year}_{month}", out int[]? block))
+            {
+                block = new int[BLOCKSIZE];
+                _dataBlocks.Add($"{year}_{month}", block);
+            }
+            return block;
         }
-
-        return block;
     }
-    
-    private Dictionary<string, int[]> _datablocks;
-    private readonly object _mutex = new object();
 }
 }
 

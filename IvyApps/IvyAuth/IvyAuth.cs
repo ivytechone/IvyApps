@@ -61,7 +61,7 @@ namespace IvyTech.Auth
                 return null;
             }
 
-            return IvyIdentity.FromToken(token);            
+            return IvyIdentity.FromToken(token);
         }
 
         public bool IsTokenValid(string token)
@@ -85,9 +85,8 @@ namespace IvyTech.Auth
     
                 return token;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex.ToString());
                 return null;
             }
         }

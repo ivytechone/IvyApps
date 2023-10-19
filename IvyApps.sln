@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IvyApps", "IvyApps\IvyApps.csproj", "{4AC49005-7186-48B0-9173-C88DF80AEA52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7557}") = "IvyAppsTest", "IvyAppsTest\IvyAppsTest.csproj", "{4AC49005-7186-48B0-9173-C88DF80AEA52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
