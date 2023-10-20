@@ -97,7 +97,7 @@ namespace IvyApps.Test
                 Path = "/"
             };
             mockDataAccess = Substitute.For<IDataAccessLayer>();
-            return new IvyDataStore<TestFile>(config, mockDataAccess);
+            return new IvyDataStore<TestFile>(config, "test", mockDataAccess);
         }
     }
 }
