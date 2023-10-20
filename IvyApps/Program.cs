@@ -15,7 +15,7 @@ try
     builder.AddIvyDebugLogger();
 
     var ivyAuth = new IvyAuth(builder.Configuration.GetSection("IvyAuth").Get<IvyAuthConfig>());
-    var trendDataStore = new IvyDataStore<TrendUserModel>(builder.Configuration.GetSection("TrendDataStore").Get<IvyDataStoreConfig>());
+    var trendDataStore = new IvyDataStore<TrendUserModel>(builder.Configuration.GetSection("IvyDataStore").Get<IvyDataStoreConfig>(), "trend");
     var trendModel = new TrendModel(trendDataStore);
   
     builder.Services.AddHttpContextAccessor();

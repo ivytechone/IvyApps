@@ -44,7 +44,7 @@ public class IvyDataStore<T> : IIvyDataStore<T> where T: IIvyFile, new()
     private bool running;
     private bool shuttingDown;
 
-    public IvyDataStore(IvyDataStoreConfig? config, IDataAccessLayer? dataAccess = null)
+    public IvyDataStore(IvyDataStoreConfig? config, string storeName, IDataAccessLayer? dataAccess = null)
     {
         if (config == null ||
             string.IsNullOrWhiteSpace(config.Path))
@@ -58,7 +58,7 @@ public class IvyDataStore<T> : IIvyDataStore<T> where T: IIvyFile, new()
         fileSingleton = new T();
         running = false;
         shuttingDown = false;
-        dataAccessLayer = dataAccess ?? new DataAccessLayer(config.Path);
+        dataAccessLayer = dataAccess ?? new DataAccessLayer(Path.Combine(config.Path, storeName));
         shutDownEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
         workerThread = new Thread(new ParameterizedThreadStart(Worker));
     }
