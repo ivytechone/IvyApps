@@ -176,7 +176,12 @@ public class TrendUserModel : IIvyFile
             var tz = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
             var currentLocalTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
       
-            var block = getDataBlock(currentLocalTime.Year, currentLocalTime.Month);
+            var block = getDataBlock(currentLocalTime.Year, currentLocalTime.Month, true);
+            if (block == null)
+            {
+                return false;
+            }
+
             block[currentLocalTime.Day - 1] = weight;
             return true;
         }
@@ -184,7 +189,12 @@ public class TrendUserModel : IIvyFile
 
     public bool RecordWeight(int year, int month, int day, int weight)
     {
-        var block = getDataBlock(year, month);
+        var block = getDataBlock(year, month, true);
+        if (block == null)
+        {
+            return false;
+        }
+
         block[day - 1] = weight;
         return true;
     }
@@ -203,19 +213,51 @@ public class TrendUserModel : IIvyFile
                 Year = currentLocalTime.Year,
                 Month = currentLocalTime.Month,
                 Day = currentLocalTime.Day,
-                Weight =  block[currentLocalTime.Day - 1]
+                Weight = block != null ? block[currentLocalTime.Day - 1] : 0
             };
         }
     }
 
-    private int[] getDataBlock(int year, int month)
+    public IEnumerable<Record>RecordsSince(DateTime start)
+    {
+        var year = start.Year;
+        var month = start.Month;
+        var day = start.Day;
+
+        while(true)
+        {
+            while(month <= 12)
+            {
+                var block = getDataBlock(year, month);
+                var daysInMonth = DateTime.DaysInMonth(year, month);
+                while(day <= daysInMonth)
+                {
+                    yield return new Record()
+                    {
+                        Date = new DateTime(year, month, day),
+                        Weight = block != null ? block[day-1] : 0
+                    };
+                    day++;
+                }
+                day = 1;
+                month++;
+            }
+            month = 1;
+            year++;
+        }
+    }
+
+    private int[]? getDataBlock(int year, int month, bool create = false)
     {
         lock (_mutex)
         {
             if (!_dataBlocks.TryGetValue($"{year}_{month}", out int[]? block))
             {
-                block = new int[BLOCKSIZE];
-                _dataBlocks.Add($"{year}_{month}", block);
+                if (create)
+                {
+                    block = new int[BLOCKSIZE];
+                    _dataBlocks.Add($"{year}_{month}", block);
+                }
             }
             return block;
         }
