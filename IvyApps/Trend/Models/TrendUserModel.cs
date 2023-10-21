@@ -4,7 +4,7 @@ namespace Trend.Models
 {
 public class Record
 {
-    public string? Date {get;set;}
+    public DateTime Date {get;set;}
     public double Weight {get;set;}
 }
 
@@ -147,6 +147,9 @@ public class TrendUserModel : IIvyFile
             {
                 foreach (var blockId in _dataBlocks.Keys)
                 {
+                    var yearmonth = blockId.Split("_");
+                    var year = Convert.ToInt16(yearmonth[0]);
+                    var month = Convert.ToInt16(yearmonth[1]);
                     var block = _dataBlocks[blockId];
                     
                     for (int day = 0; day < BLOCKSIZE; day++)
@@ -157,7 +160,7 @@ public class TrendUserModel : IIvyFile
                         {
                             yield return new Record()
                             {
-                                Date = $"{blockId}_{day+1}",
+                                Date = new DateTime(year, month, day+1),
                                 Weight = weight / 10.0
                             };
                         }
