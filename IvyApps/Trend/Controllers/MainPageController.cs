@@ -1,6 +1,7 @@
 using IvyTech.Auth;
 using Trend.Models;
 using Microsoft.AspNetCore.Mvc;
+using IvyApps.Trend;
 
 public class MainPageController : Controller
 {
@@ -25,10 +26,12 @@ public class MainPageController : Controller
 
             if (userModel != null)
             {
+                var today = userModel.WeightRecordToday();
                 var model = new MainPageModel()
                 {
                     Identity = identity,
-                    WeightRecordToday = userModel.WeightRecordToday()
+                    WeightRecordToday = today,
+                    GraphPoints = GraphBuilder.BasicGraphPoints(userModel, today.Date.AddDays(-30), 30)
                 };
 
                 return View(model);

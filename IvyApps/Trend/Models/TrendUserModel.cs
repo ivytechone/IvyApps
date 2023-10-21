@@ -205,14 +205,12 @@ public class TrendUserModel : IIvyFile
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
             var currentLocalTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-            
+
             var block = getDataBlock(currentLocalTime.Year, currentLocalTime.Month);
             
             return new WeightRecord() 
             {
-                Year = currentLocalTime.Year,
-                Month = currentLocalTime.Month,
-                Day = currentLocalTime.Day,
+                Date = currentLocalTime,
                 Weight = block != null ? block[currentLocalTime.Day - 1] : 0
             };
         }

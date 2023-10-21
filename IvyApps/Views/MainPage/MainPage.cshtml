@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <link rel="stylesheet" href="trend.css">
+<link rel="stylesheet" href="https://unpkg.com/charts.css/dist/charts.min.css">
 <script src="ivyAuth.js"></script>
 <body>
 <div id="headerregion">
@@ -20,15 +21,31 @@
     else if (Model.WeightRecordToday.Weight == 0)
     {
          <div id="welcome">Welcome, @Model.Identity.Name @Model.Identity.Id</div>
-         <div>Enter weight record for @Model.WeightRecordToday.Month/@Model.WeightRecordToday.Day/@Model.WeightRecordToday.Year</div>
+         <div>Enter weight record for @Model.WeightRecordToday.Date.ToShortDateString()</div>
          <input onChange="onChange(this.value)">
          <div class="fullwidthbutton" onclick="onSubmit()">Submit</div>
     }
     else
     {
-        <div>Thank you, you have recorded your weight for @Model.WeightRecordToday.Month/@Model.WeightRecordToday.Day/@Model.WeightRecordToday.Year</div>
+        <div>Thank you, you have recorded your weight for @Model.WeightRecordToday.Date.ToShortDateString()</div>
     }
-    </div>
+    @if (Model != null && Model.GraphPoints != null)
+    {
+        <div id="mainchart">
+            <table class="charts-css line">
+                @{double? prevPoint = null;}
+                @foreach (var point in Model.GraphPoints)
+                {
+                    if (prevPoint != null)
+                    {
+                        <tr><td style="--start:@prevPoint; --end:@point"></td></tr>
+                    }
+                    prevPoint = point;
+                }
+            </table>
+        </div>
+    }
+</div>
  </body>
  <script>
     var weight = Number.NaN;
