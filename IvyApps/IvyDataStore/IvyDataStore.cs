@@ -60,7 +60,7 @@ public class IvyDataStore<T> : IIvyDataStore<T> where T: IIvyFile, new()
         shuttingDown = false;
         dataAccessLayer = dataAccess ?? new DataAccessLayer(Path.Combine(config.Path, storeName));
         shutDownEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
-        workerThread = new Thread(new ParameterizedThreadStart(Worker));
+        workerThread = new Thread(new ThreadStart(Worker));
     }
 
     public void Start()
@@ -117,7 +117,7 @@ public class IvyDataStore<T> : IIvyDataStore<T> where T: IIvyFile, new()
 
     public bool IsShuttingDown => shuttingDown;
 
-    private void Worker(object? parameters)
+    private void Worker()
     {
         while(!shuttingDown)
         {
@@ -148,6 +148,7 @@ public class IvyDataStore<T> : IIvyDataStore<T> where T: IIvyFile, new()
                     shutDownEvent.WaitOne(5000);
                 }
             }
+            Thread.Sleep(500);
         }
 
         shuttingDown = false;
